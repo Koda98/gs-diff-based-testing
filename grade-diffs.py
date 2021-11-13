@@ -269,7 +269,7 @@ def checkDiffsForFilename(args, ta, gsTests):
             gsTest["output"] = "Missing output in student solution for " + filename
             gsTests.append(gsTest)
         else:
-            performDiff(args, ta, gsTest, gsTests, referenceFilename, studentFilename)
+            performDiff(args, ta, gsTest, gsTests, referenceFilename, studentFilename, ndiff=True)
 
 
 def performDiff(args, ts, gsTest, gsTests, referenceFilename, studentFilename, ndiff=False):
