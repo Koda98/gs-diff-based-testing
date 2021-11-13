@@ -283,7 +283,7 @@ def performDiff(args, ts, gsTest, gsTests, referenceFilename, studentFilename, n
         lines_from_f2 = list(f2.readlines())
 
         if ndiff:
-            diffs = difflib.ndiff(lines_from_f1, lines_from_f2)
+            diffs = list(difflib.ndiff(lines_from_f1, lines_from_f2))
         else:
             diffs = list(difflib.unified_diff(lines_from_f1, lines_from_f2,
                                               fromfile="expected", tofile="actual"))
