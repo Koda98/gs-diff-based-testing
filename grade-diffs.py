@@ -292,7 +292,7 @@ def performDiff(args, ts, gsTest, gsTests, referenceFilename, studentFilename, n
             gsTest["score"] = gsTest["max_score"]
         else:
             gsTest["score"] = 0
-            if not ndiff:
+            if ndiff:
                 gsTest["output"] = "".join(diffs)
             else:
                 gsTest["output"] = "\n".join(diffs)
