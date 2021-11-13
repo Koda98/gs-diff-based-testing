@@ -100,7 +100,7 @@ def lineToTestAnnotation(args, line, linenumber):
     except (ValidationError, JSONDecodeError) as e:
         retVal["isTest"] = False
         retVal["isError"] = True
-        if (isinstance(e, JSONDecodeError)):
+        if isinstance(e, JSONDecodeError):
             retVal["error"] = e.msg
         else:
             retVal["error"] = e.message
@@ -152,7 +152,7 @@ def generate_stdout_and_stderr(args, ta, outdir):
                                encoding="utf-8")
             return_code = p.returncode
             ret.write(str(return_code))
-            if (args.verbose > 1):
+            if args.verbose > 1:
                 print("*** return_code=", return_code, " *** shell_command=", shell_command)
             return
         except subprocess.TimeoutExpired:
@@ -160,7 +160,7 @@ def generate_stdout_and_stderr(args, ta, outdir):
 
 
 def processLine(args, line, linenumber):
-    if (args.verbose > 1):
+    if args.verbose > 1:
         print("linenumber: ", linenumber, " line: ", line.strip())
     testAnnotation = lineToTestAnnotation(args, line, linenumber)
     return testAnnotation
@@ -212,7 +212,7 @@ def makeGSTest(ta, stdout_or_stderr):
 def generateOutput(args, testAnnotations):
     " generate the reference or student output by running each command "
     output_dir = outputDir(args, args.reference)
-    if (os.path.isdir(output_dir)):
+    if os.path.isdir(output_dir):
         print("Removing old directory: ", output_dir)
         try:
             shutil.rmtree(output_dir)
@@ -231,7 +231,7 @@ def generateOutput(args, testAnnotations):
             filename = ta["test"]["filename"]
             if args.verbose > 1:
                 print("LOOKING FOR [" + filename + "]")
-            if (os.path.isfile(filename)):
+            if os.path.isfile(filename):
                 shutil.copy2(filename, output_dir)
             else:
                 touch(os.path.join(output_dir, filename + "-MISSING"))
@@ -262,9 +262,9 @@ def checkDiffsForFilename(args, ta, gsTests):
         gsTest["max_score"] = test["points"]
         referenceFilename = os.path.join(outputDir(args, True), filename)
         studentFilename = os.path.join(outputDir(args, False), filename)
-        if (not os.path.isfile(referenceFilename)):
+        if not os.path.isfile(referenceFilename):
             haltWithError("No output for " + filename + " for reference solution")
-        if (os.path.isfile(studentFilename + "-MISSING")):
+        if os.path.isfile(studentFilename + "-MISSING"):
             gsTest["score"] = 0
             gsTest["output"] = "Missing output in student solution for " + filename
             gsTests.append(gsTest)
@@ -272,7 +272,7 @@ def checkDiffsForFilename(args, ta, gsTests):
             performDiff(args, ta, gsTest, gsTests, referenceFilename, studentFilename)
 
 
-def performDiff(args, ts, gsTest, gsTests, referenceFilename, studentFilename):
+def performDiff(args, ts, gsTest, gsTests, referenceFilename, studentFilename, ndiff=False):
     with open(referenceFilename) as f1, open(studentFilename) as f2:
 
         # Hack to make comparison less picky about final new lines
@@ -281,14 +281,20 @@ def performDiff(args, ts, gsTest, gsTests, referenceFilename, studentFilename):
 
         lines_from_f1 = list(f1.readlines())
         lines_from_f2 = list(f2.readlines())
-
-        diffs = list(difflib.unified_diff(lines_from_f1, lines_from_f2,
+        if not ndiff:
+            diffs = list(difflib.unified_diff(lines_from_f1, lines_from_f2,
                                           fromfile="expected", tofile="actual"))
-        if (len(diffs) == 0):
+        else:
+            diffs = difflib.ndiff(lines_from_f1, lines_from_f2)
+
+        if len(diffs) == 0:
             gsTest["score"] = gsTest["max_score"]
         else:
             gsTest["score"] = 0
-            gsTest["output"] = "\n".join(diffs)
+            if ndiff:
+                gsTest["output"] = "\n".join(diffs)
+            else:
+                gsTest["output"] = "".join(diffs)
         gsTests.append(gsTest)
 
 
@@ -319,7 +325,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if (not os.path.isfile(args.script)):
+    if not os.path.isfile(args.script):
         haltWithError("ERROR: the script " + args.script + " does not exist")
 
     testAnnotations = extractTestAnnotations(args)
@@ -332,7 +338,7 @@ if __name__ == "__main__":
     if not args.reference:
 
         reference_dir = outputDir(args, True)
-        if (not os.path.isdir(reference_dir)):
+        if not os.path.isdir(reference_dir):
             haltWithError("Cannot perform diff; reference output " + reference_dir + " not found")
 
         results = loadResultsJsonIfExists(args.inputfile)
