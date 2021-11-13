@@ -249,7 +249,7 @@ def checkDiffs(args, ta, stdout_or_stderr, gsTests):
         gsTest["max_score"] = test[stdout_or_stderr]
         referenceFilename = resultFile(outputDir(args, True), ta, stdout_or_stderr)
         studentFilename = resultFile(outputDir(args, False), ta, stdout_or_stderr)
-        performDiff(args, ta, gsTest, gsTests, referenceFilename, studentFilename, ndiff=True)
+        performDiff(args, ta, gsTest, gsTests, referenceFilename, studentFilename)
 
 
 def checkDiffsForFilename(args, ta, gsTests):
@@ -269,10 +269,10 @@ def checkDiffsForFilename(args, ta, gsTests):
             gsTest["output"] = "Missing output in student solution for " + filename
             gsTests.append(gsTest)
         else:
-            performDiff(args, ta, gsTest, gsTests, referenceFilename, studentFilename, ndiff=True)
+            performDiff(args, ta, gsTest, gsTests, referenceFilename, studentFilename)
 
 
-def performDiff(args, ts, gsTest, gsTests, referenceFilename, studentFilename, ndiff=False):
+def performDiff(args, ts, gsTest, gsTests, referenceFilename, studentFilename):
     with open(referenceFilename) as f1, open(studentFilename) as f2:
 
         # Hack to make comparison less picky about final new lines
@@ -282,20 +282,17 @@ def performDiff(args, ts, gsTest, gsTests, referenceFilename, studentFilename, n
         lines_from_f1 = list(f1.readlines())
         lines_from_f2 = list(f2.readlines())
 
-        if ndiff:
-            diffs = list(difflib.ndiff(lines_from_f1, lines_from_f2))
-        else:
-            diffs = list(difflib.unified_diff(lines_from_f1, lines_from_f2,
-                                              fromfile="expected", tofile="actual"))
 
-        if len(diffs) == 0:
+        diffs = list(difflib.ndiff(lines_from_f1, lines_from_f2))
+
+        unified_diffs = list(difflib.unified_diff(lines_from_f1, lines_from_f2,
+                                              fromfile="expected", tofile="actual"))
+        if len(unified_diffs) == 0:
             gsTest["score"] = gsTest["max_score"]
         else:
             gsTest["score"] = 0
-            if ndiff:
-                gsTest["output"] = "".join(diffs)
-            else:
-                gsTest["output"] = "\n".join(diffs)
+            gsTest["output"] = "".join(diffs)
+            # gsTest["output"] = "\n".join(diffs)
 
         gsTests.append(gsTest)
 
